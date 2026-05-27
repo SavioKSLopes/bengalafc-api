@@ -1,0 +1,9 @@
+[project]
+name = "bengalafc-api"
+version = "0.1.0"
+description = "API do Bengala FC"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "django>=6.0.5",
+]
