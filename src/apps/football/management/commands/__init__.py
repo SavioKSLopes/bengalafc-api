@@ -1,0 +1,1 @@
+# Football management commands package

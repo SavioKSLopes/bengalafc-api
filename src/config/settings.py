@@ -45,6 +45,7 @@ INSTALLED_APPS = [
 
     # Local apps
     'apps.users',
+    'apps.football',
 ]
 
 MIDDLEWARE = [
@@ -147,3 +148,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / "static"]
+
+# Football API Integration settings
+import os
+FOOTBALL_API_URL = os.getenv('FOOTBALL_API_URL', 'https://v3.football.api-sports.io')
+FOOTBALL_API_KEY = os.getenv('FOOTBALL_API_KEY', '')
+FOOTBALL_API_HEADER = os.getenv('FOOTBALL_API_HEADER', 'x-apisports-key')
