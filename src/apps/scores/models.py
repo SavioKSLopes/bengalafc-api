@@ -15,7 +15,16 @@ class Player(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='player_profile')
     position = models.CharField(max_length=10, choices=POSITION_CHOICES)
-    team = models.CharField(max_length=100, blank=True)  # time do usuário no fantasy
+
+    # Liga o jogador do usuário ao jogador real da API de futebol
+    football_player = models.ForeignKey(
+        'football.Player',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='fantasy_players',
+        verbose_name='Jogador Real'
+    )
 
     def __str__(self):
         return f"{self.user.username} - {self.get_position_display()}"
@@ -31,19 +40,26 @@ class ScoreEvent(models.Model):
         ('gol', 'Gol'),
         ('assistencia', 'Assistência'),
         ('desarme', 'Desarme'),
-        ('falta_sofrida', 'Falta sofrida'),
-        ('falta_cometida', 'Falta cometida'),
-        ('passe_errado', 'Passe errado'),
-        ('penalti_sofrido', 'Penalti sofrido'),
         ('finalizacao_fora', 'Finalização (fora/trave)'),
         ('finalizacao_alvo', 'Finalização no alvo'),
     ]
 
     player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='score_events')
     event_type = models.CharField(max_length=25, choices=EVENT_CHOICES)
-    points = models.DecimalField(max_digits=5, decimal_places=2)  # aceita valores como 1.5
-    match_id = models.CharField(max_length=50, blank=True)
+    points = models.DecimalField(max_digits=5, decimal_places=2)
+    # Agora guarda a referência direta à partida real
+    fixture = models.ForeignKey(
+        'football.Fixture',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Partida'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        # Evita processar a mesma partida duas vezes
+        unique_together = ('player', 'event_type', 'fixture')
+
     def __str__(self):
-        return f"{self.player.user.username} - {self.get_event_type_display()} (+{self.points})"
+        return f"{self.player.user.username} - {self.get_event_type_display()} ({self.points}pts)"
