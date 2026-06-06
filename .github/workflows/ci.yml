@@ -42,4 +42,4 @@ jobs:
           FOOTBALL_API_KEY: "mock-key"
           FOOTBALL_API_HEADER: "x-apisports-key"
         run: |
-          uv run src/manage.py test
+          uv run src/manage.py test apps.users apps.football apps.ranking apps.scores
