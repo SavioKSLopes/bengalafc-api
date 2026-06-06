@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     # Local apps
     'apps.users',
     'apps.ranking',
+    'apps.scores',
 ]
 
 MIDDLEWARE = [
