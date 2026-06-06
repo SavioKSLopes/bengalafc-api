@@ -3,9 +3,9 @@ from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
-from .models import Player, ScoreEvent
+from ..models import Player, ScoreEvent
 from .serializers import PlayerSerializer, ScoreEventSerializer, AddScoreEventSerializer
-from .services import add_score_event, create_player, get_points_for_event
+from ..services import add_score_event, create_player, get_points_for_event
 
 User = get_user_model()
 

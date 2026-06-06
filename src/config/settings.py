@@ -10,10 +10,26 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Carrega variáveis do arquivo .env se ele existir na raiz do projeto
+env_file = BASE_DIR.parent / '.env'
+if env_file.exists():
+    with open(env_file, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#') or '=' not in line:
+                continue
+            key, value = line.split('=', 1)
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            # Define no os.environ apenas se não estiver definido para respeitar envs do sistema
+            os.environ.setdefault(key, value)
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -45,6 +61,7 @@ INSTALLED_APPS = [
 
     # Local apps
     'apps.users',
+    'apps.football',
     'apps.ranking',
     'apps.scores',
 ]
@@ -149,3 +166,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / "static"]
+
+# Football API Integration settings
+import os
+FOOTBALL_API_URL = os.getenv('FOOTBALL_API_URL', 'https://v3.football.api-sports.io')
+FOOTBALL_API_KEY = os.getenv('FOOTBALL_API_KEY', '')
+FOOTBALL_API_HEADER = os.getenv('FOOTBALL_API_HEADER', 'x-apisports-key')

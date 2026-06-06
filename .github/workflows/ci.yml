@@ -1,0 +1,45 @@
+name: Django CI
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  test:
+    name: Run Django Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python
+        run: uv python install 3.14
+
+      - name: Install Dependencies
+        run: uv sync
+
+      - name: Django System Check
+        run: |
+          uv run src/manage.py check
+
+      - name: Check Django Migrations
+        run: |
+          uv run src/manage.py makemigrations --check --dry-run
+
+      - name: Run Tests
+        env:
+          SECRET_KEY: "ci-secret-key-placeholder"
+          FOOTBALL_API_URL: "https://v3.football.api-sports.io"
+          FOOTBALL_API_KEY: "mock-key"
+          FOOTBALL_API_HEADER: "x-apisports-key"
+        run: |
+          uv run src/manage.py test apps.users apps.football apps.ranking apps.scores
