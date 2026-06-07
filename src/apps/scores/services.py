@@ -98,6 +98,27 @@ def calculate_from_statistic(player: Player, stat) -> float:
     return total_points
 
 
+def calculate_lineup_statistic_points(stat) -> float:
+    """Calcula pontos de uma estatistica real usando as regras fantasy existentes."""
+    total_points = 0.0
+
+    for stat_field, (event_type, _) in STAT_TO_EVENT.items():
+        quantity = getattr(stat, stat_field, 0) or 0
+        if quantity == 0:
+            continue
+
+        if event_type in ('cartao_amarelo', 'cartao_vermelho'):
+            quantity = min(quantity, 1)
+
+        total_points += GENERAL_POINTS.get(event_type, 0.0) * quantity
+
+    shots_fora = (stat.shots or 0) - (stat.shots_on_target or 0)
+    if shots_fora > 0:
+        total_points += GENERAL_POINTS['finalizacao_fora'] * shots_fora
+
+    return total_points
+
+
 def process_fixture_scores(fixture):
     """
     Processa todos os ScoreEvents de uma partida.
