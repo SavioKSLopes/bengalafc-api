@@ -63,3 +63,91 @@ class ScoreEvent(models.Model):
 
     def __str__(self):
         return f"{self.player.user.username} - {self.get_event_type_display()} ({self.points}pts)"
+
+
+class FantasyLineup(models.Model):
+    """Escalacao de um usuario para uma fase da competicao."""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='fantasy_lineups')
+    stage = models.ForeignKey(
+        'football.Stage',
+        on_delete=models.CASCADE,
+        related_name='fantasy_lineups',
+        verbose_name='Fase'
+    )
+    captain = models.ForeignKey(
+        'football.Player',
+        on_delete=models.PROTECT,
+        related_name='captain_lineups',
+        verbose_name='Capitao'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'stage')
+        ordering = ('stage__order', 'stage__name')
+        verbose_name = 'Escalacao'
+        verbose_name_plural = 'Escalacoes'
+
+    def __str__(self):
+        return f"{self.user.username} - {self.stage.name}"
+
+
+class FantasyLineupPlayer(models.Model):
+    lineup = models.ForeignKey(FantasyLineup, on_delete=models.CASCADE, related_name='players')
+    player = models.ForeignKey(
+        'football.Player',
+        on_delete=models.PROTECT,
+        related_name='fantasy_lineup_entries',
+        verbose_name='Jogador'
+    )
+    order = models.PositiveSmallIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('lineup', 'player')
+        ordering = ('order', 'id')
+        verbose_name = 'Jogador escalado'
+        verbose_name_plural = 'Jogadores escalados'
+
+    def __str__(self):
+        return f"{self.player.name} em {self.lineup}"
+
+
+class FantasyTransfer(models.Model):
+    """Historico de troca feita em uma escalação de fase."""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='fantasy_transfers')
+    stage = models.ForeignKey(
+        'football.Stage',
+        on_delete=models.CASCADE,
+        related_name='fantasy_transfers',
+        verbose_name='Fase'
+    )
+    lineup = models.ForeignKey(FantasyLineup, on_delete=models.CASCADE, related_name='transfers')
+    from_player = models.ForeignKey(
+        'football.Player',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='fantasy_transfers_out',
+        verbose_name='Saiu'
+    )
+    to_player = models.ForeignKey(
+        'football.Player',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='fantasy_transfers_in',
+        verbose_name='Entrou'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ('-created_at', '-id')
+        verbose_name = 'Troca'
+        verbose_name_plural = 'Trocas'
+
+    def __str__(self):
+        return f"{self.user.username} - {self.stage.name}"

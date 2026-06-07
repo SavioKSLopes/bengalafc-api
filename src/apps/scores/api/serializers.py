@@ -1,11 +1,19 @@
 from rest_framework import serializers
-from ..models import Player, ScoreEvent
+from apps.football.models import Player as FootballPlayer
+from apps.football.api.serializers import PlayerSerializer as FootballPlayerSerializer
+from ..models import (
+    FantasyLineup,
+    FantasyLineupPlayer,
+    FantasyTransfer,
+    Player,
+    ScoreEvent,
+)
 
 
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
-        fields = ('id', 'position', 'team', 'user')
+        fields = ('id', 'position', 'football_player', 'user')
         read_only_fields = ('user',)
 
 
@@ -14,10 +22,142 @@ class ScoreEventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ScoreEvent
-        fields = ('id', 'event_type', 'event_display', 'points', 'match_id', 'created_at')
+        fields = ('id', 'event_type', 'event_display', 'points', 'fixture', 'created_at')
         read_only_fields = ('points',)
 
 
 class AddScoreEventSerializer(serializers.Serializer):
     event_type = serializers.CharField()
-    match_id = serializers.CharField(required=False, allow_blank=True)
+    fixture = serializers.IntegerField(required=False)
+
+
+class FantasyLineupPlayerSerializer(serializers.ModelSerializer):
+    player_detail = FootballPlayerSerializer(source='player', read_only=True)
+
+    class Meta:
+        model = FantasyLineupPlayer
+        fields = ('id', 'player', 'player_detail', 'order', 'created_at')
+        read_only_fields = ('id', 'player_detail', 'created_at')
+
+
+class FantasyLineupSerializer(serializers.ModelSerializer):
+    players = FantasyLineupPlayerSerializer(many=True, read_only=True)
+    player_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        allow_empty=False
+    )
+    captain_id = serializers.IntegerField(write_only=True)
+    captain_detail = FootballPlayerSerializer(source='captain', read_only=True)
+
+    class Meta:
+        model = FantasyLineup
+        fields = (
+            'id',
+            'stage',
+            'captain',
+            'captain_id',
+            'captain_detail',
+            'players',
+            'player_ids',
+            'created_at',
+            'updated_at',
+        )
+        read_only_fields = ('id', 'captain', 'captain_detail', 'players', 'created_at', 'updated_at')
+
+    def validate_player_ids(self, value):
+        if len(value) != len(set(value)):
+            raise serializers.ValidationError('A escalação não pode ter jogadores repetidos.')
+
+        found_count = FootballPlayer.objects.filter(id__in=value).count()
+        if found_count != len(value):
+            raise serializers.ValidationError('Um ou mais jogadores informados não existem.')
+
+        return value
+
+    def validate(self, attrs):
+        player_ids = attrs.get('player_ids')
+        captain_id = attrs.get('captain_id')
+        request = self.context.get('request')
+
+        if self.instance:
+            current_player_ids = list(self.instance.players.values_list('player_id', flat=True))
+            player_ids = player_ids if player_ids is not None else current_player_ids
+            captain_id = captain_id if captain_id is not None else self.instance.captain_id
+        elif request and FantasyLineup.objects.filter(user=request.user, stage=attrs.get('stage')).exists():
+            raise serializers.ValidationError({'stage': 'Você já possui escalação para esta fase.'})
+
+        if player_ids and captain_id not in player_ids:
+            raise serializers.ValidationError({'captain_id': 'O capitão precisa estar na escalação.'})
+
+        return attrs
+
+    def create(self, validated_data):
+        player_ids = validated_data.pop('player_ids')
+        captain_id = validated_data.pop('captain_id')
+        lineup = FantasyLineup.objects.create(
+            user=self.context['request'].user,
+            captain_id=captain_id,
+            **validated_data
+        )
+        self._set_players(lineup, player_ids)
+        return lineup
+
+    def update(self, instance, validated_data):
+        player_ids = validated_data.pop('player_ids', None)
+        captain_id = validated_data.pop('captain_id', None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        if captain_id is not None:
+            instance.captain_id = captain_id
+        instance.save()
+
+        if player_ids is not None:
+            old_ids = list(instance.players.values_list('player_id', flat=True))
+            self._set_players(instance, player_ids)
+            self._record_transfers(instance, old_ids, player_ids)
+
+        return instance
+
+    def _set_players(self, lineup, player_ids):
+        lineup.players.all().delete()
+        FantasyLineupPlayer.objects.bulk_create([
+            FantasyLineupPlayer(lineup=lineup, player_id=player_id, order=index)
+            for index, player_id in enumerate(player_ids)
+        ])
+
+    def _record_transfers(self, lineup, old_ids, new_ids):
+        removed_ids = [player_id for player_id in old_ids if player_id not in new_ids]
+        added_ids = [player_id for player_id in new_ids if player_id not in old_ids]
+        transfer_count = max(len(removed_ids), len(added_ids))
+
+        FantasyTransfer.objects.bulk_create([
+            FantasyTransfer(
+                user=lineup.user,
+                stage=lineup.stage,
+                lineup=lineup,
+                from_player_id=removed_ids[index] if index < len(removed_ids) else None,
+                to_player_id=added_ids[index] if index < len(added_ids) else None,
+            )
+            for index in range(transfer_count)
+        ])
+
+
+class FantasyTransferSerializer(serializers.ModelSerializer):
+    from_player_detail = FootballPlayerSerializer(source='from_player', read_only=True)
+    to_player_detail = FootballPlayerSerializer(source='to_player', read_only=True)
+
+    class Meta:
+        model = FantasyTransfer
+        fields = (
+            'id',
+            'stage',
+            'lineup',
+            'from_player',
+            'from_player_detail',
+            'to_player',
+            'to_player_detail',
+            'created_at',
+        )
+        read_only_fields = fields
