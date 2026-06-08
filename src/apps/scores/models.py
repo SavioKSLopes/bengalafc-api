@@ -81,6 +81,15 @@ class FantasyLineup(models.Model):
         related_name='captain_lineups',
         verbose_name='Capitao'
     )
+    coach = models.ForeignKey(
+        'football.Coach',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='fantasy_lineups',
+        verbose_name='Técnico'
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -151,3 +160,4 @@ class FantasyTransfer(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.stage.name}"
+

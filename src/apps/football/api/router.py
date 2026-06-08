@@ -7,11 +7,13 @@ from .views import (
     StageViewSet,
     TeamStatisticViewSet,
     TeamViewSet,
+    CoachViewSet
 )
 
 router = DefaultRouter()
 router.register(r"teams", TeamViewSet, basename="team")
 router.register(r"players", PlayerViewSet, basename="player")
+router.register(r"coaches", CoachViewSet, basename="coach")
 router.register(r"competitions", CompetitionViewSet, basename="competition")
 router.register(r"stages", StageViewSet, basename="stage")
 router.register(r"fixtures", FixtureViewSet, basename="fixture")

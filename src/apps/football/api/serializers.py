@@ -7,6 +7,7 @@ from apps.football.models import (
     Stage,
     Team,
     TeamStatistic,
+    Coach,
 )
 
 
@@ -140,3 +141,19 @@ class TeamStatisticSerializer(serializers.ModelSerializer):
             "yellow_cards",
             "red_cards",
         ]
+
+class CoachSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Coach
+        fields = (
+            'id',
+            'external_id',
+            'team',
+            'name',
+            'nationality',
+            'photo',
+            'is_active',
+            'created_at',
+            'updated_at',
+        )
+        read_only_fields = ('created_at', 'updated_at')

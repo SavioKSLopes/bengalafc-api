@@ -157,3 +157,38 @@ def create_player(user, position, football_player_id=None):
         position=position,
         football_player=football_player
     )
+
+def calculate_coach_points(fantasy_coach) -> float:
+    """
+    Pontuação do técnico = média do rating de todos os jogadores
+    da sua seleção que pontuaram na partida mais recente.
+    """
+    from apps.football.models import PlayerStatistic
+    from django.db.models import Avg
+
+    if not fantasy_coach.football_coach or not fantasy_coach.football_coach.team:
+        return 0.0
+
+    resultado = PlayerStatistic.objects.filter(
+        player__team=fantasy_coach.football_coach.team,
+        minutes__gt=0,
+        rating__isnull=False
+    ).aggregate(media=Avg("rating"))
+
+    return float(resultado["media"] or 0.0)
+
+
+def create_coach(user, football_coach_id=None):
+    """Cria perfil de técnico para um usuário."""
+    from apps.football.models import Coach as FootballCoach
+
+    football_coach = None
+    if football_coach_id:
+        football_coach = FootballCoach.objects.filter(
+            external_id=football_coach_id
+        ).first()
+
+    return Coach.objects.create(
+        user=user,
+        football_coach=football_coach
+    )

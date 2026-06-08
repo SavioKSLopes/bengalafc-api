@@ -7,6 +7,7 @@ from apps.football.models import (
     Stage,
     Team,
     TeamStatistic,
+    Coach,
 )
 from .serializers import (
     CompetitionSerializer,
@@ -16,6 +17,7 @@ from .serializers import (
     StageSerializer,
     TeamSerializer,
     TeamStatisticSerializer,
+    CoachSerializer,
 )
 
 
@@ -172,3 +174,27 @@ class TeamStatisticViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(fixture_id=fixture_id)
 
         return queryset
+
+class CoachViewSet(viewsets.ModelViewSet):
+    """ViewSet para gerenciar técnicos."""
+
+    queryset = Coach.objects.all().order_by("name")
+    serializer_class = CoachSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        team_id = self.request.query_params.get("team")
+        nationality = self.request.query_params.get("nationality")
+        is_active = self.request.query_params.get("is_active")
+
+        if team_id:
+            queryset = queryset.filter(team_id=team_id)
+        if nationality:
+            queryset = queryset.filter(nationality__iexact=nationality)
+        if is_active is not None:
+            is_active_bool = is_active.lower() in ["true", "1"]
+            queryset = queryset.filter(is_active=is_active_bool)
+
+        return queryset
+

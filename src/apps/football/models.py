@@ -253,3 +253,33 @@ class TeamStatistic(models.Model):
 
     def __str__(self) -> str:
         return f"{self.team.name} @ {self.fixture}"
+
+class Coach(models.Model):
+    """Representa o técnico de uma equipe."""
+
+    external_id = models.IntegerField(
+        unique=True, db_index=True, verbose_name="ID Externo"
+    )
+    team = models.OneToOneField(
+        Team,
+        on_delete=models.CASCADE,
+        related_name="coach",
+        null=True,
+        blank=True,
+        verbose_name="Seleção",
+    )
+    name = models.CharField(max_length=255, verbose_name="Nome")
+    nationality = models.CharField(
+        max_length=255, null=True, blank=True, verbose_name="Nacionalidade"
+    )
+    photo = models.URLField(max_length=500, null=True, blank=True, verbose_name="Foto")
+    is_active = models.BooleanField(default=True, verbose_name="Ativo")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Criado em")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Atualizado em")
+
+    class Meta:
+        verbose_name = "Técnico"
+        verbose_name_plural = "Técnicos"
+
+    def __str__(self) -> str:
+        return self.name

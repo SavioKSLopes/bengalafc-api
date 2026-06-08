@@ -9,8 +9,9 @@ from apps.football.models import (
     PlayerStatistic,
     Stage,
     Team,
-    TeamStatistic,
+    TeamStatistic, Coach,
 )
+from apps.football.services.sync_coaches import SyncCoachesService
 from apps.football.services.sync_competitions import SyncCompetitionsService
 from apps.football.services.sync_fixtures import SyncFixturesService
 from apps.football.services.sync_players import SyncPlayersService
@@ -257,3 +258,33 @@ class FootballServicesTestCase(TestCase):
         self.assertEqual(player_stat.goals, 2)
         self.assertEqual(float(player_stat.rating), 9.20)
         self.assertEqual(player_stat.fixture, fixture)
+
+    def test_sync_coaches_service(self) -> None:
+        # Arrange
+        team = Team.objects.create(external_id=26, name="Argentina")
+        self.mock_client.get_coaches.return_value = [
+            {
+                "id": 1,
+                "name": "Lionel Scaloni",
+                "nationality": "Argentina",
+                "photo": "https://media.api-sports.io/football/coachs/1.png",
+                "team": {"id": 26, "name": "Argentina"},
+            }
+        ]
+        service = SyncCoachesService(api_client=self.mock_client)
+
+        # Act
+        coaches = service.execute(team_id=26)
+
+        # Assert
+        self.assertEqual(len(coaches), 1)
+        coach = coaches[0]
+        self.assertEqual(coach.name, "Lionel Scaloni")
+        self.assertEqual(coach.external_id, 1)
+        self.assertEqual(coach.team, team)
+        self.assertEqual(coach.nationality, "Argentina")
+        self.assertEqual(Coach.objects.count(), 1)
+
+        # Idempotency
+        service.execute(team_id=26)
+        self.assertEqual(Coach.objects.count(), 1)

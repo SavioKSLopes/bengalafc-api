@@ -10,7 +10,7 @@ from .serializers import (
 )
 from apps.football.models import PlayerStatistic
 from apps.scores.models import FantasyLineup, FantasyLineupPlayer, FantasyTransfer, Player, ScoreEvent
-from apps.scores.services import calculate_lineup_statistic_points, create_player
+from apps.scores.services import calculate_lineup_statistic_points, create_player, create_coach
 
 
 class PlayerViewSet(viewsets.GenericViewSet):
@@ -120,6 +120,28 @@ class FantasyLineupViewSet(viewsets.ModelViewSet):
                 'points': points,
             })
 
+        if lineup.coach:
+            from django.db.models import Avg
+            from apps.football.models import PlayerStatistic
+
+            resultado = PlayerStatistic.objects.filter(
+                fixture__stage=lineup.stage,
+                player__team=lineup.coach.team,
+                minutes__gt=0,
+                rating__isnull=False
+            ).aggregate(media=Avg("rating"))
+
+            coach_points = float(resultado["media"] or 0.0)
+            total_points += coach_points
+
+            items.append({
+                'fixture': None,
+                'player': None,
+                'player_name': lineup.coach.name,
+                'is_captain': False,
+                'is_coach': True,
+                'points': coach_points,
+            })
         return Response({
             'lineup': lineup.id,
             'stage': lineup.stage_id,

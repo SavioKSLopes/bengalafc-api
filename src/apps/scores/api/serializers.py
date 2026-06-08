@@ -8,7 +8,7 @@ from ..models import (
     Player,
     ScoreEvent,
 )
-
+from apps.football.models import Coach as FootballCoach
 
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -49,6 +49,13 @@ class FantasyLineupSerializer(serializers.ModelSerializer):
     )
     captain_id = serializers.IntegerField(write_only=True)
     captain_detail = FootballPlayerSerializer(source='captain', read_only=True)
+    coach_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+    coach_detail = serializers.SerializerMethodField(read_only=True)
+
+    def get_coach_detail(self, obj):
+        if obj.coach:
+            return {'id': obj.coach.id, 'name': obj.coach.name, 'photo': obj.coach.photo}
+        return None
 
     class Meta:
         model = FantasyLineup
@@ -58,12 +65,15 @@ class FantasyLineupSerializer(serializers.ModelSerializer):
             'captain',
             'captain_id',
             'captain_detail',
+            'coach',
+            'coach_id',
+            'coach_detail',
             'players',
             'player_ids',
             'created_at',
             'updated_at',
         )
-        read_only_fields = ('id', 'captain', 'captain_detail', 'players', 'created_at', 'updated_at')
+        read_only_fields = ('id', 'captain', 'captain_detail', 'coach', 'coach_detail', 'players', 'created_at', 'updated_at')
 
     def validate_player_ids(self, value):
         if len(value) != len(set(value)):
@@ -78,7 +88,11 @@ class FantasyLineupSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         player_ids = attrs.get('player_ids')
         captain_id = attrs.get('captain_id')
+        coach_id = attrs.get('coach_id')
         request = self.context.get('request')
+
+        if coach_id and not FootballCoach.objects.filter(id=coach_id).exists():
+            raise serializers.ValidationError({'coach_id': 'Técnico não encontrado.'})
 
         if self.instance:
             current_player_ids = list(self.instance.players.values_list('player_id', flat=True))
@@ -95,9 +109,11 @@ class FantasyLineupSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         player_ids = validated_data.pop('player_ids')
         captain_id = validated_data.pop('captain_id')
+        coach_id = validated_data.pop('coach_id', None)
         lineup = FantasyLineup.objects.create(
             user=self.context['request'].user,
             captain_id=captain_id,
+            coach_id=coach_id,
             **validated_data
         )
         self._set_players(lineup, player_ids)
@@ -106,11 +122,14 @@ class FantasyLineupSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         player_ids = validated_data.pop('player_ids', None)
         captain_id = validated_data.pop('captain_id', None)
+        coach_id = validated_data.pop('coach_id', None)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         if captain_id is not None:
             instance.captain_id = captain_id
+        if coach_id is not None:
+            instance.coach_id = coach_id
         instance.save()
 
         if player_ids is not None:

@@ -36,7 +36,18 @@ class Command(BaseCommand):
             teams_kwargs["season"] = season
         call_command("sync_teams", **teams_kwargs)
 
-        # 2. Players
+        # 2. Coaches
+        self.stdout.write(
+            self.style.MIGRATE_LABEL("Passo 2/7: Sincronizando técnicos...")
+        )
+        coaches_kwargs = {}
+        if comp_id:
+            coaches_kwargs["competition_id"] = comp_id
+        if season:
+            coaches_kwargs["season"] = season
+        call_command("sync_coaches", **coaches_kwargs)
+
+        # 3. Players
         self.stdout.write(
             self.style.MIGRATE_LABEL("Passo 2/6: Sincronizando jogadores...")
         )
@@ -45,7 +56,7 @@ class Command(BaseCommand):
             players_kwargs["season"] = season
         call_command("sync_players", **players_kwargs)
 
-        # 3. Competitions
+        # 4. Competitions
         self.stdout.write(
             self.style.MIGRATE_LABEL("Passo 3/6: Sincronizando competições...")
         )
@@ -56,7 +67,7 @@ class Command(BaseCommand):
             comp_kwargs["season"] = season
         call_command("sync_competitions", **comp_kwargs)
 
-        # 4. Stages
+        # 5. Stages
         self.stdout.write(
             self.style.MIGRATE_LABEL("Passo 4/6: Sincronizando fases...")
         )
@@ -67,7 +78,7 @@ class Command(BaseCommand):
             stages_kwargs["season"] = season
         call_command("sync_stages", **stages_kwargs)
 
-        # 5. Fixtures
+        # 6. Fixtures
         self.stdout.write(
             self.style.MIGRATE_LABEL("Passo 5/6: Sincronizando partidas...")
         )
@@ -78,7 +89,7 @@ class Command(BaseCommand):
             fixtures_kwargs["season"] = season
         call_command("sync_fixtures", **fixtures_kwargs)
 
-        # 6. Statistics
+        # 7. Statistics
         self.stdout.write(
             self.style.MIGRATE_LABEL("Passo 6/6: Sincronizando estatísticas...")
         )
