@@ -30,7 +30,11 @@ requires-dist = [
     { name = "django-cors-headers", specifier = ">=4.7.0" },
     { name = "django-oauth-toolkit", specifier = ">=3.2.0" },
     { name = "djangorestframework", specifier = ">=3.17.1" },
+<<<<<<< HEAD
     { name = "gunicorn", specifier = ">=26.0.0" },
+=======
+    { name = "gunicorn", specifier = ">=23.0.0" },
+>>>>>>> 9a711c1616cf1750c05730e9058109ea81be4561
     { name = "pillow", specifier = ">=12.2.0" },
 ]
 

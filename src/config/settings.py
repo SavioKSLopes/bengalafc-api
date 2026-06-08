@@ -41,7 +41,17 @@ SECRET_KEY = 'django-insecure-t70yu_e)#$gxe3&$s1vf$##v&5*9e+73u$djapvt8z#=j_mb-e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['bengalafc-api-production.up.railway.app', '127.0.0.1', 'localhost', '10.0.2.2']
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv('ALLOWED_HOSTS', 'bengalafc-api-production.up.railway.app,127.0.0.1,localhost,10.0.2.2').split(',')
+    if host.strip()
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv('CSRF_TRUSTED_ORIGINS', 'https://bengalafc-api-production.up.railway.app,http://localhost:8000,http://127.0.0.1:8000').split(',')
+    if origin.strip()
+]
 
 
 # Application definition
