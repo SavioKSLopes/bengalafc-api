@@ -95,6 +95,11 @@ AUTHENTICATION_BACKENDS = (
     'oauth2_provider.backends.OAuth2Backend',
 )
 
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    "CSRF_TRUSTED_ORIGINS",
+    "https://bengalafc-api-production.up.railway.app"
+).split(",")
+
 # CORS Settings (Allow everything for now as requested for web app communication)
 CORS_ALLOW_ALL_ORIGINS = True
 
