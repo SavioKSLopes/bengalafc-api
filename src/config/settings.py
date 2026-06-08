@@ -41,7 +41,7 @@ SECRET_KEY = 'django-insecure-t70yu_e)#$gxe3&$s1vf$##v&5*9e+73u$djapvt8z#=j_mb-e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['bengalafc-api-production.up.railway.app']
 
 
 # Application definition
