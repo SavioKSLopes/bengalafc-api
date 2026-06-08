@@ -16,7 +16,6 @@ urlpatterns = [
     path('api/', include(football_router.urls)),
     path('api/', include(ranking_router.urls)),
     path('api/', include(scores_router.urls)),
-
     
     # OAuth2 URLs
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
