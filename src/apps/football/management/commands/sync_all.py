@@ -40,12 +40,7 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.MIGRATE_LABEL("Passo 2/7: Sincronizando técnicos...")
         )
-        coaches_kwargs = {}
-        if comp_id:
-            coaches_kwargs["competition_id"] = comp_id
-        if season:
-            coaches_kwargs["season"] = season
-        call_command("sync_coaches", **coaches_kwargs)
+        call_command("sync_coaches")
 
         # 3. Players
         self.stdout.write(

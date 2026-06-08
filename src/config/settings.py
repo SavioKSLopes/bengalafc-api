@@ -41,7 +41,7 @@ SECRET_KEY = 'django-insecure-t70yu_e)#$gxe3&$s1vf$##v&5*9e+73u$djapvt8z#=j_mb-e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['bengalafc-api-production.up.railway.app']
+ALLOWED_HOSTS = ['bengalafc-api-production.up.railway.app', '127.0.0.1', 'localhost', '10.0.2.2']
 
 
 # Application definition
@@ -172,3 +172,7 @@ import os
 FOOTBALL_API_URL = os.getenv('FOOTBALL_API_URL', 'https://v3.football.api-sports.io')
 FOOTBALL_API_KEY = os.getenv('FOOTBALL_API_KEY', '')
 FOOTBALL_API_HEADER = os.getenv('FOOTBALL_API_HEADER', 'x-apisports-key')
+
+# Login Redirect Settings
+LOGIN_REDIRECT_URL = '/hello/'
+LOGIN_URL = '/accounts/login/'
