@@ -43,13 +43,13 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.getenv('ALLOWED_HOSTS', 'bengalafc-api-production.up.railway.app,127.0.0.1,localhost,10.0.2.2').split(',')
+    for host in os.getenv('ALLOWED_HOSTS', 'bengalafc-api-production.up.railway.app,bengalafc-api-production-0a3a.up.railway.app,.up.railway.app,127.0.0.1,localhost,10.0.2.2').split(',')
     if host.strip()
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
-    for origin in os.getenv('CSRF_TRUSTED_ORIGINS', 'https://bengalafc-api-production.up.railway.app,http://localhost:8000,http://127.0.0.1:8000').split(',')
+    for origin in os.getenv('CSRF_TRUSTED_ORIGINS', 'https://bengalafc-api-production.up.railway.app,https://bengalafc-api-production-0a3a.up.railway.app,https://*.up.railway.app,http://localhost:8000,http://127.0.0.1:8000').split(',')
     if origin.strip()
 ]
 
