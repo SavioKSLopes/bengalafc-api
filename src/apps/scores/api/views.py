@@ -1,4 +1,4 @@
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Avg
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -121,9 +121,6 @@ class FantasyLineupViewSet(viewsets.ModelViewSet):
             })
 
         if lineup.coach:
-            from django.db.models import Avg
-            from apps.football.models import PlayerStatistic
-
             resultado = PlayerStatistic.objects.filter(
                 fixture__stage=lineup.stage,
                 player__team=lineup.coach.team,
