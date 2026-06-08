@@ -10,9 +10,5 @@ dependencies = [
     "djangorestframework>=3.17.1",
     "django-cors-headers>=4.7.0",
     "pillow>=12.2.0",
-<<<<<<< HEAD
     "gunicorn>=26.0.0",
-=======
-    "gunicorn>=23.0.0",
->>>>>>> 9a711c1616cf1750c05730e9058109ea81be4561
 ]
