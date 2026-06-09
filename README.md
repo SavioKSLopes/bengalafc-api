@@ -228,3 +228,8 @@ Para validar a integridade da lógica de negócios, endpoints e regras do fantas
 # Rodar todos os testes do projeto
 .venv/bin/python src/manage.py test
 ```
+
+## Links
+
+- **YouTube:** [https://youtu.be/JM7avSOpPHM](https://youtu.be/JM7avSOpPHM)
+- **Repositório do cliente:** [https://github.com/Djavantl/bengalafc](https://github.com/Djavantl/bengalafc)
